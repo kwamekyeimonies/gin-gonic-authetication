@@ -13,6 +13,13 @@ func main(){
 		},
 		)
 
+	server.GET(
+		"/retest",
+		func(ctx *gin.Context) {
+			ctx.JSON(200,gin.H{"Message":"Api Working,checking for live mode"})
+		},
+	)
+
 
 	server.Run(":6666")
 }

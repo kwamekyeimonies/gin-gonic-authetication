@@ -20,3 +20,14 @@ func New(service service.Video_Service) VideoController{
 		service: service,
 	}
 }
+
+func (c *controller) FindAll() []entity.Video{
+	return c.service.FindAll()
+}
+
+func (c *controller) Save(ctx *gin.Context){
+	var video entity.Video
+	ctx.BindJSON(&video)
+
+	c.service.Save(video)
+}
