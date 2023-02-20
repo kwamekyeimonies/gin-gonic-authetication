@@ -32,10 +32,8 @@ func Login() gin.HandlerFunc{
 			ctx.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
 			return
 		}
-
 		err := UserCollection.FindOne(c,bson.M{"email":user.Email}).Decode(&foundUser)
 		defer cancel()
-
 		if err != nil{
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error":"Email or Password Inccorrect"})
 			return
@@ -53,11 +51,16 @@ func Login() gin.HandlerFunc{
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error":"User not found"})
 			return
 		}
-
 		token,refreshToken,_ :=utils.GenerateAllTokens(foundUser.Email,foundUser.First_name,foundUser.Last_name,foundUser.User_type,foundUser.User_id)
-		utils.U
+		utils.UpdateAllTokens(token,refreshToken,foundUser.User_id)
+		err = UserCollection.FindOne(ctx,bson.M{"user_id":foundUser.User_id}).Decode(&foundUser)
 
+		if err != nil{
+			ctx.JSON(http.StatusInternalServerError,gin.H{"error":err.Error()})
+			return
+		}
 
+		ctx.JSON(http.StatusOK, foundUser)
 	}
 
 }
@@ -77,6 +80,7 @@ func SignUp() gin.HandlerFunc{
 			ctx.JSON(http.StatusBadRequest, gin.H{"error":validationErr.Error()})
 			return
 		}
+		//Check if Email Already Exist
 		count,err := UserCollection.CountDocuments(c,bson.M{"email":user.Email})
 		defer cancel()
 		if err != nil{
@@ -84,8 +88,8 @@ func SignUp() gin.HandlerFunc{
 			ctx.JSON(http.StatusInternalServerError,gin.H{"error":err.Error()})
 		}
 
-		password := HashPassword(user.Password)
-		user.Password = &password
+		password := utils.HashPassword(user.Password)
+		user.Password = password
 
 		count, err = UserCollection.CountDocuments(c,bson.M{"phone":user.Phone})
 		defer cancel()
