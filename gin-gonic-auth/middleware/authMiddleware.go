@@ -19,5 +19,17 @@ func Authenticate() gin.HandlerFunc{
 		}
 
 		claims, err := utils.ValidateToken(clientToken)
+		if err != ""{
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error":err})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Set("email",claims.Email)
+		ctx.Set("first_name",claims.Email)
+		ctx.Set("last_name",claims.Last_Name)
+		ctx.Set("uid",claims.Uid)
+		ctx.Set("user_type",claims.User_Type)
+		ctx.Next()
 	}
 }
